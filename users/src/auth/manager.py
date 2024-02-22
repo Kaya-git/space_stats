@@ -12,7 +12,7 @@ from .db import get_user_db
 import logging
 
 
-LOGGER = logging.Logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

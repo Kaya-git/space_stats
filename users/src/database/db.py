@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine as _create_async_engine
 
 from config import conf
-from .repositories import UserRepo
+from .repositories import UserRepo, ApiRepo
 
 from .base_model import Base
 
@@ -37,15 +37,18 @@ class Database:
     """
 
     user: UserRepo
-    """ User repository """
+
+    api_key: ApiRepo
 
     session: AsyncSession
 
     def __init__(
         self,
         session: AsyncSession = None,
-        user: UserRepo = None
+        user: UserRepo = None,
+        api_key: ApiRepo = None
     ) -> None:
 
         self.session = session
+        self.api_key = api_key or ApiRepo(session=session)
         self.user = user or UserRepo(session=session)

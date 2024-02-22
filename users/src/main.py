@@ -1,17 +1,17 @@
 from fastapi import FastAPI
 import logging
-from auth.schemas import UserRead, UserCreate
-from auth.auth import auth_backend
-from auth.routers import fastapi_users
+from auth import UserRead, UserCreate, auth_backend, fastapi_users
+from routers import user_router
 
 
-LOGGER = logging.Logger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 users_app = FastAPI(
     title="Users"
 )
 
+users_app.include_router(user_router)
 users_app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/api/auth/jwt",
