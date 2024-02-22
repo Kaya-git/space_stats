@@ -6,11 +6,13 @@ from fastapi_users import (BaseUserManager, UUIDIDMixin, exceptions, models,
                            schemas)
 
 from config import conf
-from enums import Role
-from sevices import services
-from users.models import User
+from database import Role, User
 
 from .db import get_user_db
+import logging
+
+
+LOGGER = logging.Logger(__name__)
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
@@ -22,11 +24,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         user: User,
         request: Optional[Request] = None
     ):
+        LOGGER.info(f"User {user.id} has registered.")
 
-        await services.mail.send_token(
-            recepient_email=user.email,
-            generated_token=user.verification_token
-        )
         return f"User {user.id} has registered."
 
     async def on_after_forgot_password(
@@ -76,6 +75,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
         await self.on_after_register(created_user, request)
 
+        LOGGER.info("User created")
         return created_user
 
 
