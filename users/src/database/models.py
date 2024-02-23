@@ -5,6 +5,7 @@ import sqlalchemy as sa
 from datetime import datetime
 import uuid
 import enum
+from typing import List
 
 
 UUID_ID = uuid.UUID
@@ -18,33 +19,13 @@ class Role(enum.StrEnum):
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "user"
 
-    email: Mapped[str] = mapped_column(
-        sa.String(length=320),
-        unique=True,
-        index=True,
-        nullable=False,
-    )
-    hashed_password: Mapped[str] = mapped_column(
-        sa.String(length=1024),
-        nullable=True,
-    )
-    is_active: Mapped[bool] = mapped_column(
-        sa.Boolean,
-        default=True,
-        nullable=False,
-    )
-    is_superuser: Mapped[bool] = mapped_column(
-        sa.Boolean,
-        default=False,
-        nullable=False,
-    )
     registered_on: Mapped[int] = mapped_column(
         sa.TIMESTAMP,
         default=datetime.utcnow,
         nullable=False
     )
 
-    hashed_api_keys: Mapped[int] = relationship(
+    api_keys: Mapped[List["ApiKey"]] = relationship(
         back_populates="user",
         cascade="all,delete"
     )
@@ -78,5 +59,5 @@ class ApiKey(Base):
     )
 
     user: Mapped["User"] = relationship(
-        back_populates="hashed_api_keys"
+        back_populates="api_keys"
     )

@@ -2,10 +2,11 @@ import logging
 import logging.handlers
 import os
 from dataclasses import dataclass
-
+import sys
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL
 
+sys.path.append(os.path.join(sys.path[0], 'users'))
 
 load_dotenv()
 
@@ -65,7 +66,7 @@ class LoggerSetup:
         console.setFormatter(formatter)
 
         # configure TimeRotatingFileHandler
-        log_file = "logs/users.log"
+        log_file = "../logs/users.log"
         file = logging.handlers.TimedRotatingFileHandler(
             filename=log_file,
             when="midnight",

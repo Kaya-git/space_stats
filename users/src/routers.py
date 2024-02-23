@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from database import get_async_session, Database
+from database.db import get_async_session, Database
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
-from auth import current_active_user
+from auth.users import current_active_user
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -30,16 +30,15 @@ async def add_api(
     try:
         new_api_key = await db.api_key.new(
             key_name=api_name,
-            api_key=api_key,
+            hashed_key=api_key,
             user_id=user.id
         )
         db.session.add(new_api_key)
         await db.session.flush()
     except Exception as exc:
         LOGGER.error(exc)
-        await db.session.rollback()
-
+        raise
     await db.session.commit()
     return {
-        "status": "OK"
+        "status": f"{new_api_key.id}"
     }
