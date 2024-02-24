@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 import logging
-from auth.schemas import UserRead, UserCreate, UserUpdate
+from auth.schemas import UserGetDTO, UserPostDTO, UserPatchDTO
 from auth.users import auth_backend, fastapi_users, current_active_user
 from routers import user_router
 from database.models import User
@@ -20,7 +20,7 @@ users_app.include_router(
     prefix="/auth/jwt", tags=["auth"]
 )
 users_app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
+    fastapi_users.get_register_router(UserGetDTO, UserPostDTO),
     prefix="/auth",
     tags=["auth"],
 )
@@ -30,12 +30,12 @@ users_app.include_router(
     tags=["auth"],
 )
 users_app.include_router(
-    fastapi_users.get_verify_router(UserRead),
+    fastapi_users.get_verify_router(UserGetDTO),
     prefix="/auth",
     tags=["auth"],
 )
 users_app.include_router(
-    fastapi_users.get_users_router(UserRead, UserUpdate),
+    fastapi_users.get_users_router(UserGetDTO, UserPatchDTO),
     prefix="/users",
     tags=["users"],
 )

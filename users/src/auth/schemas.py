@@ -3,7 +3,7 @@ import uuid
 from fastapi_users import schemas
 
 
-class UserRead(schemas.BaseUser[uuid.UUID]):
+class UserGetDTO(schemas.BaseUser[uuid.UUID]):
     email: str
     is_active: bool = True
     is_superuser: bool = False
@@ -13,7 +13,7 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
         from_attributes = True
 
 
-class UserCreate(schemas.BaseUserCreate):
+class UserPostDTO(schemas.BaseUserCreate):
     email: str
     password: str
     is_active: Optional[bool] = True
@@ -21,5 +21,5 @@ class UserCreate(schemas.BaseUserCreate):
     is_verified: Optional[bool] = False
 
 
-class UserUpdate(schemas.BaseUserUpdate):
+class UserPatchDTO(schemas.BaseUserUpdate):
     pass
