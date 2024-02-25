@@ -4,6 +4,7 @@ from typing import Generic, List, Type, TypeVar
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from .db import async_session_maker
 
 from .base_model import Base
 
@@ -31,7 +32,8 @@ class Repository(Generic[AbstractModel]):
         :param ident: Key which need to find entry in database
         :return:
         """
-        return await self.session.get(entity=self.type_model, ident=ident)
+        async with async_session_maker() as session:
+            return await session.get(entity=self.type_model, ident=ident)
 
     async def get_single_by_where(self, whereclause) -> AbstractModel | None:
         """
@@ -39,17 +41,30 @@ class Repository(Generic[AbstractModel]):
         :param whereclause: Clause by which entry will be found
         :return: Model if only one model was found, else None
         """
-        statement = select(self.type_model).where(whereclause)
-        return (await self.session.execute(statement)).scalar_one_or_none()
+        async with async_session_maker() as session:
+            statement = select(self.type_model).where(whereclause)
+            return (await session.execute(statement)).scalar_one_or_none()
 
     async def get_all(
         self,
         order_by=None,
     ) -> List[AbstractModel]:
-        statement = select(self.type_model)
-        if order_by:
-            statement = statement.order_by(order_by)
-        return (await self.session.scalars(statement)).all()
+        """
+        Get many models from the database with whereclause
+        :param whereclause: Where clause for finding models
+        :param limit: (Optional) Limit count of results
+        :param order_by: (Optional) Order by clause
+
+        Example:
+        >> Repository.get_many(Model.id == 1, limit=10, order_by=Model.id)
+
+        :return: List of founded models
+        """
+        async with async_session_maker() as session:
+            statement = select(self.type_model)
+            if order_by:
+                statement = statement.order_by(order_by)
+            return (await session.scalars(statement)).all()
 
     async def get_many_where(
         self, whereclause, limit: int = 100, order_by=None
@@ -65,11 +80,11 @@ class Repository(Generic[AbstractModel]):
 
         :return: List of founded models
         """
-        statement = select(self.type_model).where(whereclause).limit(limit)
-        if order_by:
-            statement = statement.order_by(order_by)
-
-        return (await self.session.scalars(statement)).all()
+        async with async_session_maker() as session:
+            statement = select(self.type_model).where(whereclause).limit(limit)
+            if order_by:
+                statement = statement.order_by(order_by)
+            return (await session.scalars(statement)).all()
 
     async def delete(self, whereclause) -> None:
         """
@@ -78,18 +93,20 @@ class Repository(Generic[AbstractModel]):
         :param whereclause: (Optional) Which statement
         :return: Nothing
         """
-        statement = delete(self.type_model).where(whereclause)
-        await self.session.execute(statement)
+        async with async_session_maker() as session:
+            statement = delete(self.type_model).where(whereclause)
+            await session.execute(statement)
 
     async def update(self, whereclause, values, table_name):
-        statement = update(
-            self.type_model
-            ).where(
-                whereclause
-            ).values(
-                table_name=values
-            )
-        await self.session.execute(statement)
+        async with async_session_maker() as session:
+            statement = update(
+                self.type_model
+                ).where(
+                    whereclause
+                ).values(
+                    table_name=values
+                )
+            await session.execute(statement)
 
     @abc.abstractmethod
     async def new(self, *args, **kwargs) -> None:

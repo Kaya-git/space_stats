@@ -10,7 +10,7 @@ from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from src.database import User, Role, ApiKey, Base
+from src.database.models import User, Role, ApiKey, Base
 from src.config import conf
 from alembic import context
 
