@@ -2,7 +2,7 @@ import json
 
 import aiohttp
 import logging
-
+from datetime import datetime
 from wb.services.tools import get_date
 
 
@@ -15,21 +15,22 @@ class StandardApiClient:
     def __init__(self, new_api_key: str):
         self.token = new_api_key
         self.base = "https://suppliers-api.wildberries.ru/"
+        self.base_tariffs = "https://common-api.wildberries.ru/"
 
-    def build_headers(self):
+    async def build_headers(self):
         return {
             "Authorization": self.token,
             "accept": "application/json",
             "Content-Type": "application/json",
         }
 
-    def update_discount(self, wb_id, new_discount):
+    async def update_discount(self, wb_id, new_discount):
         with aiohttp.ClientSession() as session:
             url = self.base + "public/api/v1/updateDiscounts"
             data = [{"discount": int(new_discount), "nm": int(wb_id)}]
 
             response = session.post(
-                url, data=json.dumps(data), headers=self.build_headers()
+                url, data=json.dumps(data), headers=await self.build_headers()
             )
             LOGGER.info(f"{response.status_code}, message: {response.json()}")
             if response.status_code == 200:
@@ -38,22 +39,22 @@ class StandardApiClient:
             error = errors[0] if errors else "Неизвестная ошибка"
             return False, error
 
-    def get_prices(self):
+    async def get_prices(self):
         with aiohttp.ClientSession() as session:
             url = self.base + "public/api/v1/info"
 
-            response = session.get(url, headers=self.build_headers())
+            response = session.get(url, headers=await self.build_headers())
 
             if response.status_code == 200:
                 return response.json()
             return []
 
-    def get_stock(self):
+    async def get_stock(self):
         url = self.base + "api/v2/stocks"
 
         offset = 200
 
-        def get_page(skip=0):
+        async def get_page(skip=0):
             with aiohttp.ClientSession() as session:
 
                 get_params = {
@@ -63,14 +64,14 @@ class StandardApiClient:
                 try:
                     response = session.get(
                         url, get_params,
-                        headers=self.build_headers()
+                        headers=await self.build_headers()
                     )
                 except ConnectionError as e:
                     LOGGER.info(f"ConnectionError {e}")
                     return None
                 return response
 
-        response = get_page()
+        response = await get_page()
         if not response:
             return []
         if response.status_code != 200:
@@ -92,12 +93,12 @@ class StandardApiClient:
         LOGGER.info(f"Got stocks from marketplace {len(stock)} pcs.")
         return stock
 
-    def get_orders(self, days):
+    async def get_orders(self, days):
         url = self.base + "api/v2/orders"
 
         offset = 200
 
-        def get_page(skip=0):
+        async def get_page(skip=0):
             with aiohttp.ClientSession() as session:
                 get_params = {
                     "skip": skip,
@@ -107,10 +108,10 @@ class StandardApiClient:
                 return session.get(
                     url,
                     get_params,
-                    headers=self.build_headers()
+                    headers=await self.build_headers()
                 )
 
-        response = get_page()
+        response = await get_page()
         if response.status_code != 200:
             LOGGER.info(f"{response.status_code}, {response.text}")
             return []
@@ -128,7 +129,7 @@ class StandardApiClient:
         LOGGER.info(f"Got orders from marketplace {len(orders)} pcs.")
         return orders
 
-    def get_content(self):
+    async def get_content(self):
         """Get all content to obtain tricky images' urls.
         Must be cached properly, heavy request."""
         with aiohttp.ClientSession() as session:
@@ -193,3 +194,31 @@ class StandardApiClient:
                     break
             LOGGER.info("Exit loop")
             return content
+
+    async def get_tariffs_box(self):
+        with aiohttp.ClientSession() as session:
+
+            LOGGER.info("Получаем тарифы для паллет")
+            url = self.base_tariffs + "api/v1/tariffs/box"
+            get_params = {
+                "date": datetime.today().strftime('%Y-%m-%d')
+            }
+            return session.get(
+                url,
+                get_params,
+                headers=await self.build_headers()
+            )
+
+    async def get_tariffs_pallet(self):
+        with aiohttp.ClientSession() as session:
+
+            LOGGER.info("Получаем тарифы для паллет")
+            url = self.base_tariffs + "api/v1/tariffs/pallet"
+            get_params = {
+                "date": datetime.today().strftime('%Y-%m-%d')
+            }
+            return session.get(
+                url,
+                get_params,
+                headers=await self.build_headers()
+            )
