@@ -21,8 +21,12 @@ async def fill_db():
         db.session.add(user)
         await db.session.flush()
         api_keys = [
-            await db.api_key.new(key_name="qwerty", hashed_key="qwerty", user_id=user.id),
-            await db.api_key.new(key_name="asdf", hashed_key="asdf", user_id=user.id)
+            await db.api_key.new(
+                key_name="qwerty", hashed_key="qwerty", user_id=user.id
+            ),
+            await db.api_key.new(
+                key_name="asdf", hashed_key="asdf", user_id=user.id
+            )
         ]
         db.session.add_all(api_keys)
         await db.session.commit()

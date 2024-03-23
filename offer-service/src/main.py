@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 import logging
-import pika
 from config import conf
 
 app = FastAPI(
@@ -14,11 +13,14 @@ LOGGER = logging.getLogger(__name__)
 async def startup():
     LOGGER.info("--- Start up App ---")
     conf.rbtmq.build_connection()
+    rbtmq_channel = conf.rbtmq.get_channel()
+    rbtmq_channel.queue_declare(queue="cost_price")
 
 
 @app.on_event
 async def shutdown():
     LOGGER.info("--- Shudown App ---")
+    conf.rbtmq.close_connection()
 
 
 if __name__ == "__main__":

@@ -12,13 +12,13 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class RabbitMQ:
-    host = os.environ.get("RABBITMQ")
-    conn = None
+    __host = os.environ.get("RABBITMQ")
+    __conn = None
 
     def build_connection(self) -> None:
         LOGGER.info("Создаем соединение с RbtMQ")
-        self.conn = pika.BlockingConnection(
-            pika.ConnectionParameters(f'{self.host}')
+        self.__conn = pika.BlockingConnection(
+            pika.ConnectionParameters(f'{self.__host}')
         )
 
     def get_channel(
@@ -26,9 +26,13 @@ class RabbitMQ:
         connection: pika.BlockingConnection = None
     ) -> pika.adapters.blocking_connection.BlockingChannel:
         LOGGER.info("Получаем канал для работы")
-        if self.conn is None:
+
+        if self.__conn is None:
             self.build_connection()
-        return self.conn.channel()
+        return self.__conn.channel()
+
+    def close_connection(self) -> None:
+        self.__conn.close()
 
 
 @dataclass
