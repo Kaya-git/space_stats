@@ -14,7 +14,10 @@ async def startup():
     LOGGER.info("--- Start up App ---")
     conf.rbtmq.build_connection()
     rbtmq_channel = conf.rbtmq.get_channel()
-    rbtmq_channel.queue_declare(queue="cost_price")
+    rbtmq_channel.exchange_declare(
+        exchange="offer_service",
+        exchange_type="fanout"
+    )
 
 
 @app.on_event
