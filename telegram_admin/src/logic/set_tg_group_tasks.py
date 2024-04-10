@@ -1,10 +1,8 @@
 from aiogram import Router, types, F
 from aiogram.types import CallbackQuery, Message
-from asyncio import sleep
-from keyboards.inline import get_inline_keyboard
+from keyboards.inline import pick_tg_channel_inline_keyboard
 from aiogram.fsm.context import FSMContext
 from fsm import TgTasksStates
-from config import conf
 from keyboards.reply import cancel_button, kb_main_menu
 from handlers import form_links_list
 
@@ -16,7 +14,7 @@ set_tg_tasks = Router(name="set_telegram_task")
 async def select_tg_channel(message: types.Message):
     await message.answer(
         text="Выбери тг канал",
-        reply_markup=get_inline_keyboard()
+        reply_markup=pick_tg_channel_inline_keyboard()
     )
 
 
