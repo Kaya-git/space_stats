@@ -15,6 +15,7 @@ wb_api = FastAPI(
 async def main():
     ...
 
+
 @wb_api.on_event("startup")
 async def on_startup():
     LOGGER.info("--- Start up App ---")
