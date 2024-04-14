@@ -31,11 +31,11 @@ async def select_part_number(call: CallbackQuery, state:  FSMContext) -> None:
 
 @set_tg_tasks.message(TgTasksStates.product_links)
 async def load_product_link(message: Message, state: FSMContext) -> None:
-    await state.update_data(product_links=message.text)
+    links_list = await form_links_list(message.text)
+    await state.update_data(product_links=links_list)
     user_data = state.get_data()
-    links_list = await form_links_list(user_data["product_links"])
-    """ Отправляем в rbtmq на парсер"""
 
+    """ Отправляем в rbtmq на парсер"""
     await message.reply(
         "Задание отправленно в брокер для дальнейщей передачи парсеру",
         reply_markup=kb_main_menu
