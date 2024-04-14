@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from fsm import TgTasksStates
 from keyboards.reply import cancel_button, kb_main_menu
 from handlers import form_links_list
+from rbtmq_handler import rbtmq_handler
 
 
 set_tg_tasks = Router(name="set_telegram_task")
@@ -36,6 +37,11 @@ async def load_product_link(message: Message, state: FSMContext) -> None:
     user_data = state.get_data()
 
     """ Отправляем в rbtmq на парсер"""
+    rbtmq_handler.publish(
+        method="parser",
+        routing_key="telegram_admin",
+        body=user_data
+    )
     await message.reply(
         "Задание отправленно в брокер для дальнейщей передачи парсеру",
         reply_markup=kb_main_menu
